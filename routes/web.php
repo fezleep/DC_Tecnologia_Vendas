@@ -1,29 +1,30 @@
 <?php
 
-use App\Http\Controllers\VendaController;
-use App\Http\Controllers\ProfileController; // <-- ADICIONE ESTA LINHA
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\VendaController;
 
-// Página inicial: mostra o login se não autenticado
+// Página inicial
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Rota dashboard (após login)
+// Dashboard protegido por login e verificação de e-mail
 Route::get('/dashboard', function () {
-    return redirect('/vendas');
-})->middleware(['auth'])->name('dashboard');
+    return view('dashboard');
+})->middleware(['auth', 'verified'])->name('dashboard');
 
-// Rotas protegidas por autenticação
+// Rotas autenticadas
 Route::middleware(['auth'])->group(function () {
-    Route::resource('vendas', VendaController::class);
-    Route::get('/vendas/{venda}/pdf', [VendaController::class, 'downloadPdf'])->name('vendas.pdf');
-
-    // ROTAS DE PERFIL (adicione estas linhas)
+    // Rotas do perfil do usuário
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Rotas da venda
+    Route::resource('vendas', VendaController::class);
+    Route::get('/vendas/{venda}/pdf', [VendaController::class, 'downloadPdf'])->name('vendas.pdf');
 });
 
-// Rotas de autenticação (login, register, etc.)
+// Rotas de autenticação (login, registro etc)
 require __DIR__.'/auth.php';
